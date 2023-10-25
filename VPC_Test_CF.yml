@@ -11,20 +11,35 @@ Resources:
         - Key: Name
           Value: VPCTest
   
-  SubnetTest:
+  PrivateSubnetTest:
     Type: AWS::EC2::Subnet
+    DependsOn: VPCTest
     Properties:
-      AssignIpv6AddressOnCreation: false
+      # Can only specify either AvailabilityZone or AvailabilityZoneId, NOT both.
       AvailabilityZone: ap-southeast-1a
-      AvailabilityZoneId: apse1-az2
+      # AvailabilityZoneId: apse1-az2
+
       CidrBlock: 10.0.0.0/28
-      EnableDns64: Boolean
-      Ipv6CidrBlock: String
-      Ipv6Native: Boolean
-      MapPublicIpOnLaunch: Boolean
-      OutpostArn: String
-      PrivateDnsNameOptionsOnLaunch: 
-        PrivateDnsNameOptionsOnLaunch
+      # MapPublicIpOnLaunch: true # Indicates whether instances launched in this subnet receive a public IPv4 address. The default value is false.
       Tags: 
-        - Tag
-      VpcId: String
+        - Key: Name
+          Value: PrivateSubnetTest
+      VpcId: !GetAtt VPCTest.VpcId
+
+  # PublicSubnetTest:
+  #   Type: AWS::EC2::Subnet
+  #   Properties:
+  #     AssignIpv6AddressOnCreation: Boolean
+  #     AvailabilityZone: String
+  #     AvailabilityZoneId: String
+  #     CidrBlock: String
+  #     EnableDns64: Boolean
+  #     Ipv6CidrBlock: String
+  #     Ipv6Native: Boolean
+  #     MapPublicIpOnLaunch: Boolean
+  #     OutpostArn: String
+  #     PrivateDnsNameOptionsOnLaunch: 
+  #       PrivateDnsNameOptionsOnLaunch
+  #     Tags: 
+  #       - Tag
+  #     VpcId: String
