@@ -1,0 +1,51 @@
+---
+Resources:
+  SGTest:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for EC2 Instance
+      SecurityGroupEgress: 
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      # Tags: 
+      #   - Key: Name
+      #     Value: jon-CTTest-EC2Sg
+      VpcId: vpc-0617575eda12fa99b
+    
+  EC2TestInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: SGTest
+    Properties:
+      ImageId: ami-0556fb70e2e8f34b7
+      KeyName: test # better to prompt user to create themselves
+      InstanceType: t2.micro
+      SecurityGroupIds: 
+        - !GetAtt SGTest.GroupId
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp3
+            DeleteOnTermination: true
+            VolumeSize: 20
+      Tags: 
+        - Key: Name
+          Value: EC2TestInstance
+      UserData: !Base64
+        'Fn::Sub': |
+          #!/bin/bash
+          # Use this for your user data (script without newlines)
+          # install httpd (Linux 2 version)
+          yum update -y
+          yum install -y httpd.x86_64
+          systemctl start httpd.service
+          systemctl enable httpd.service
+          echo "Hello World from $(hostname -f)" > /var/www/html/index.html

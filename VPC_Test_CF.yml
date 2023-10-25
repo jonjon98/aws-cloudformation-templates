@@ -1,0 +1,31 @@
+---
+Resources:
+  VPCTest:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      EnableDnsHostnames: false
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags: 
+        - Key: Name
+          Value: VPCTest
+  
+  SubnetTest:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AssignIpv6AddressOnCreation: false
+      AvailabilityZone: ap-southeast-1a
+      AvailabilityZoneId: apse1-az2
+      CidrBlock: 10.0.0.0/28
+      EnableDns64: Boolean
+      Ipv6CidrBlock: String
+      Ipv6Native: Boolean
+      MapPublicIpOnLaunch: Boolean
+      OutpostArn: String
+      PrivateDnsNameOptionsOnLaunch: 
+        PrivateDnsNameOptionsOnLaunch
+      Tags: 
+        - Tag
+      VpcId: String
+
