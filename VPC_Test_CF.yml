@@ -28,4 +28,3 @@ Resources:
       Tags: 
         - Tag
       VpcId: String
-
