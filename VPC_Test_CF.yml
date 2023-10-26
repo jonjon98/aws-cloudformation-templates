@@ -13,7 +13,7 @@ Resources:
   
   PrivateSubnetTest:
     Type: AWS::EC2::Subnet
-    DependsOn: VPCTest
+    DependsOn: VPCTest ### Don't think this is needed
     Properties:
       # Can only specify either AvailabilityZone or AvailabilityZoneId, NOT both.
       AvailabilityZone: ap-southeast-1a
@@ -26,20 +26,54 @@ Resources:
           Value: PrivateSubnetTest
       VpcId: !GetAtt VPCTest.VpcId
 
-  # PublicSubnetTest:
-  #   Type: AWS::EC2::Subnet
-  #   Properties:
-  #     AssignIpv6AddressOnCreation: Boolean
-  #     AvailabilityZone: String
-  #     AvailabilityZoneId: String
-  #     CidrBlock: String
-  #     EnableDns64: Boolean
-  #     Ipv6CidrBlock: String
-  #     Ipv6Native: Boolean
-  #     MapPublicIpOnLaunch: Boolean
-  #     OutpostArn: String
-  #     PrivateDnsNameOptionsOnLaunch: 
-  #       PrivateDnsNameOptionsOnLaunch
-  #     Tags: 
-  #       - Tag
-  #     VpcId: String
+  PublicSubnetTest:
+    Type: AWS::EC2::Subnet
+    DependsOn: VPCTest ### Don't think this is needed
+    Properties:
+      AvailabilityZone: ap-southeast-1a
+      CidrBlock: 10.0.0.16/28
+      Tags: 
+        - Key: Name
+          Value: PublicSubnetTest
+      VpcId: !GetAtt VPCTest.VpcId
+
+# Associate PublicSubnetTest to PublicRouteTableTest
+  ConnectSubnetToPublicRouteTableTest:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !GetAtt PublicRouteTableTest.RouteTableId
+      SubnetId: !GetAtt PublicSubnetTest.SubnetId
+
+  InternetGatewayTest:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags: 
+        - Key: Name
+          Value: InternetGatewayTest
+
+# Attach the InternetGatewayTest to the VPCTest
+  VPCGatewayAttachmentTest:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      # Specify either InternetGatewayId or VpnGatewayId but not both
+      InternetGatewayId: !GetAtt InternetGatewayTest.InternetGatewayId
+      VpcId: !GetAtt VPCTest.VpcId
+      # VpnGatewayId: String
+
+
+  PublicRouteTableTest:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags: 
+        - Key: Name
+          Value: PublicRouteTableTest
+      VpcId: !GetAtt VPCTest.VpcId
+
+# Create a route in PublicRouteTableTest to the InternetGatewayTest
+  InternetGatewayRouteTest:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      # DestinationPrefixListId: String
+      GatewayId: !GetAtt InternetGatewayTest.InternetGatewayId
+      RouteTableId: !GetAtt PublicRouteTableTest.RouteTableId
