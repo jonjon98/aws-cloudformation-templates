@@ -1,26 +1,7 @@
 ---
 Resources:
-  SGTest:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security Group for EC2 Instance
-      SecurityGroupEgress: 
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
-      SecurityGroupIngress: 
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-      # Tags: 
-      #   - Key: Name
-      #     Value: jon-CTTest-EC2Sg
-      VpcId: vpc-0617575eda12fa99b
-    
+### EC2 instance
+# Create an EC2 instance resource
   EC2TestInstance:
     Type: AWS::EC2::Instance
     DependsOn: SGTest
@@ -49,3 +30,26 @@ Resources:
           systemctl start httpd.service
           systemctl enable httpd.service
           echo "Hello World from $(hostname -f)" > /var/www/html/index.html
+
+## Create resources which the EC2 instance needs
+# Create a Security Group resource
+  SGTest:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for EC2 Instance
+      SecurityGroupEgress: 
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      # Tags: 
+      #   - Key: Name
+      #     Value: jon-CTTest-EC2Sg
+      VpcId: vpc-0617575eda12fa99b
