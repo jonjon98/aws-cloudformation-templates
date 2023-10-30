@@ -21,7 +21,8 @@ Resources:
     DependsOn: VPCTest #### Don't think this is needed
     Properties:
       AvailabilityZone: ap-southeast-1a
-      CidrBlock: 10.0.0.16/28
+      CidrBlock: 10.0.0.0/28 # 10.0.0.0 - 10.0.0.16 (16 IPs)
+      MapPublicIpOnLaunch: true
       Tags: 
         - Key: Name
           Value: PublicSubnetTest
@@ -83,9 +84,72 @@ Resources:
       AvailabilityZone: ap-southeast-1a
       # AvailabilityZoneId: apse1-az2
 
-      CidrBlock: 10.0.0.0/28
+      CidrBlock: 10.0.0.16/28 # 10.0.0.16 - 10.0.0.32 (16 IPs)
       # MapPublicIpOnLaunch: true # Indicates whether instances launched in this subnet receive a public IPv4 address. The default value is false.
       Tags: 
         - Key: Name
           Value: PrivateSubnetTest
       VpcId: !GetAtt VPCTest.VpcId
+
+## Create resources which the Private Subnet needs
+# Create a Private Route Table resource
+  PrivateRouteTableTest:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags: 
+        - Key: Name
+          Value: PrivateRouteTableTest
+      VpcId: !GetAtt VPCTest.VpcId
+
+## Linking the resources
+# Associate PrivateSubnetTest to PrivateRouteTableTest
+  ConnectSubnetToPrivateRouteTableTest:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !GetAtt PrivateRouteTableTest.RouteTableId
+      SubnetId: !GetAtt PrivateSubnetTest.SubnetId
+
+
+### Bastion Instance
+# Create a Bastion Instance resource
+  BastionInstanceTest:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0556fb70e2e8f34b7
+      InstanceType: t2.micro
+      KeyName: test
+      SubnetId: !GetAtt PublicSubnetTest.SubnetId
+      SecurityGroupIds:
+        - !Ref BastionSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'BastionInstanceTest'
+
+## Create resources which the Bastion Instance needs
+# Create a Security Group resource
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        !Sub 'Security group for ${AWS::StackName} bastion host'
+      VpcId: !Ref VPCTest
+
+# Security Group Ingress
+  BastionAllowInboundSSHFromInternet:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref BastionSecurityGroup
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      CidrIp: 0.0.0.0/0
+
+# Security Group Egress
+  BastionAllowOutboundSSHToApplication:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref BastionSecurityGroup
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      DestinationSecurityGroupId: !Ref BastionSecurityGroup
