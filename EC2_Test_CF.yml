@@ -1,8 +1,8 @@
 ---
 Resources:
-### EC2 instance
-# Create an EC2 instance resource
-  EC2TestInstance:
+### EC2 Instance
+# Create an EC2 Instance resource
+  EC2InstanceTest:
     Type: AWS::EC2::Instance
     DependsOn: SGTest
     Properties:
@@ -19,7 +19,7 @@ Resources:
             VolumeSize: 20
       Tags: 
         - Key: Name
-          Value: EC2TestInstance
+          Value: EC2InstanceTest
       UserData: !Base64
         'Fn::Sub': |
           #!/bin/bash
@@ -31,7 +31,7 @@ Resources:
           systemctl enable httpd.service
           echo "Hello World from $(hostname -f)" > /var/www/html/index.html
 
-## Create resources which the EC2 instance needs
+## Create resources which the EC2 Instance needs
 # Create a Security Group resource
   SGTest:
     Type: AWS::EC2::SecurityGroup
