@@ -1,0 +1,31 @@
+---
+Resources:
+### IAM Role
+# Create a IAM Role
+  IAMTest:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17" # I am not sure why but the version number has to be this otherwise there would be an error
+        Statement:
+          - Action: 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17" # I am not sure why but the version number has to be this otherwise there would be an error
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+
+# Create an Instance Profile for the above IAM role (only for EC2 instances, it acts as a container for the IAM role)
+  InstanceProfileTest:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref IAMTest
