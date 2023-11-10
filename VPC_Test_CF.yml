@@ -153,6 +153,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub 'BastionInstanceTest'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          touch /home/ec2-user/test.pem # Creating files userdata scripts need to have the full path specified
 
 ## Create resources which the Bastion Instance needs
 # Create a Bastion Security Group resource
