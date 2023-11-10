@@ -28,7 +28,7 @@ Resources:
           Value: PublicSubnetTest
       VpcId: !GetAtt VPCTest.VpcId
     
-## Create resources which the Public Subnet needs
+## Create resources in the Public Subnet
 # Create a Public Route Table resource
   PublicRouteTableTest:
     Type: AWS::EC2::RouteTable
@@ -45,6 +45,19 @@ Resources:
       Tags: 
         - Key: Name
           Value: InternetGatewayTest
+
+# Create a NAT Gateway to allow for outgoing internet traffic
+  NATGatewayTest:
+    Type: AWS::EC2::NatGateway
+    Properties:
+        AllocationId: !GetAtt NATGatewayEIPTest.AllocationId
+        SubnetId: !Ref PublicSubnetTest
+
+# Create EIP for NAT Gateway
+  NATGatewayEIPTest:
+    Type: AWS::EC2::EIP
+    Properties:
+        Domain: VPCTest
 
 ## Linking the resources
 # Associate PublicSubnetTest to PublicRouteTableTest
@@ -63,7 +76,7 @@ Resources:
       VpcId: !GetAtt VPCTest.VpcId
       # VpnGatewayId: String
 
-## Create Routes for the Route Table
+## Create Routes for the Public Route Table
 # Create a route in PublicRouteTableTest to the InternetGatewayTest
   InternetGatewayRouteTest:
     Type: AWS::EC2::Route
@@ -91,7 +104,7 @@ Resources:
           Value: PrivateSubnetTest
       VpcId: !GetAtt VPCTest.VpcId
 
-## Create resources which the Private Subnet needs
+## Create resources in the Private Subnet
 # Create a Private Route Table resource
   PrivateRouteTableTest:
     Type: AWS::EC2::RouteTable
@@ -108,6 +121,16 @@ Resources:
     Properties:
       RouteTableId: !GetAtt PrivateRouteTableTest.RouteTableId
       SubnetId: !GetAtt PrivateSubnetTest.SubnetId
+
+## Create Routes for the Private Route Table
+# Create a route in PrivateRouteTableTest to the NATGatewayTest
+  RouteNATGatewayTest:
+    DependsOn: NATGatewayTest
+    Type: AWS::EC2::Route
+    Properties:
+        RouteTableId: !Ref PrivateRouteTableTest
+        DestinationCidrBlock: '0.0.0.0/0'
+        NatGatewayId: !Ref NATGatewayTest
 
 
 ### Bastion Instance
