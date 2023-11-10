@@ -1,4 +1,10 @@
 ---
+Parameters:
+  InstanceKeyPair:
+    Type: String
+    Default: test
+    Description: Enter The name of the key pair which you would like to use.
+
 Resources:
 ### VPC
 # Create a VPC resource
@@ -140,7 +146,7 @@ Resources:
     Properties:
       ImageId: ami-0556fb70e2e8f34b7
       InstanceType: t2.micro
-      KeyName: test
+      KeyName: !Ref InstanceKeyPair
       SubnetId: !GetAtt PublicSubnetTest.SubnetId
       SecurityGroupIds:
         - !Ref BastionSGTest
@@ -185,7 +191,7 @@ Resources:
     Properties:
       ImageId: ami-0556fb70e2e8f34b7
       InstanceType: t2.micro
-      KeyName: test
+      KeyName: !Ref InstanceKeyPair
       SubnetId: !Ref PrivateSubnetTest
       SecurityGroupIds:
         - !Ref ApplicationSGTest
