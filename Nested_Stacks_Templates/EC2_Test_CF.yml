@@ -1,9 +1,19 @@
 ---
 Parameters:
+  InstanceImageId:
+    Type: String
+    Default: ami-0556fb70e2e8f34b7
+    Description: AMI of the EC2 instances
+
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    Description: Type of the EC2 instances
+
   InstanceKeyPair:
     Type: String
     Default: test
-    Description: Enter The name of the key pair which you would like to use.
+    Description: Name of the key pair which would be used to access the EC2 instances
 
   VPCTemplateURL:
     Type: String
@@ -24,8 +34,8 @@ Resources:
   BastionInstanceTest:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0556fb70e2e8f34b7
-      InstanceType: t2.micro
+      ImageId: !Ref InstanceImageId
+      InstanceType: !Ref InstanceType
       KeyName: !Ref InstanceKeyPair
       SubnetId: !GetAtt VPCTestStack.Outputs.PublicSubnetTestId ####!Ref PublicSubnetTest
       SecurityGroupIds:
@@ -73,8 +83,8 @@ Resources:
   ApplicationInstanceTest:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0556fb70e2e8f34b7
-      InstanceType: t2.micro
+      ImageId: !Ref InstanceImageId
+      InstanceType: !Ref InstanceType
       KeyName: !Ref InstanceKeyPair
       SubnetId: !GetAtt VPCTestStack.Outputs.PrivateSubnetTestId ####!Ref PrivateSubnetTest
       SecurityGroupIds:
