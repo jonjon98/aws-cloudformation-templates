@@ -1,0 +1,106 @@
+---
+Parameters:
+  InstanceKeyPair:
+    Type: String
+    Default: test
+    Description: Enter The name of the key pair which you would like to use.
+
+  VPCTemplateURL:
+    Type: String
+    Description: URL of the VPC nested stack template
+
+Resources:
+### Nested Stack Resources
+# VPCTestStack
+  VPCTestStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Ref VPCTemplateURL
+      TimeoutInMinutes: '60'
+
+
+### Bastion Instance
+# Create a Bastion Instance resource
+  BastionInstanceTest:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0556fb70e2e8f34b7
+      InstanceType: t2.micro
+      KeyName: !Ref InstanceKeyPair
+      SubnetId: !GetAtt VPCTestStack.Outputs.PublicSubnetTestId ####!Ref PublicSubnetTest
+      SecurityGroupIds:
+        - !Ref BastionSGTest
+      Tags:
+        - Key: Name
+          Value: !Sub 'BastionInstanceTest'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          touch /home/ec2-user/test.pem # Creating files userdata scripts need to have the full path specified
+
+## Create resources which the Bastion Instance needs
+# Create a Bastion Security Group resource
+  BastionSGTest:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        !Sub 'Security group for ${AWS::StackName} bastion host'
+      VpcId: !GetAtt VPCTestStack.Outputs.VPCTestId ####!Ref VPCTest
+
+# Bastion Security Group Ingress
+  BastionAllowInboundSSHFromInternet:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref BastionSGTest
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      CidrIp: 0.0.0.0/0
+
+# Bastion Security Group Egress
+  BastionAllowOutboundSSHToApplication:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref BastionSGTest
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      DestinationSecurityGroupId: !Ref ApplicationSGTest
+
+
+### Application Instance
+# Create an Application Instance resource
+  ApplicationInstanceTest:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0556fb70e2e8f34b7
+      InstanceType: t2.micro
+      KeyName: !Ref InstanceKeyPair
+      SubnetId: !GetAtt VPCTestStack.Outputs.PrivateSubnetTestId ####!Ref PrivateSubnetTest
+      SecurityGroupIds:
+        - !Ref ApplicationSGTest
+      Tags:
+        - Key: Name
+          Value: !Sub 'ApplicationInstanceTest'
+      UserData: !Base64
+        'Fn::Sub': |
+          echo "Hello World from $(hostname -f)" > /home/ec2-user/hihihi.txt
+
+## Create resources which the Bastion Instance needs
+# Create an Application Security Group resource
+  ApplicationSGTest:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        !Sub 'Internal Security group for ${AWS::StackName}'
+      VpcId: !GetAtt VPCTestStack.Outputs.VPCTestId ####!Ref VPCTest
+
+# Application Security Group Ingress
+  ApplicationAllowInboundSSHFromBastion:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ApplicationSGTest
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      SourceSecurityGroupId: !Ref BastionSGTest
