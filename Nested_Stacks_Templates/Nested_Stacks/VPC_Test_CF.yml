@@ -22,7 +22,7 @@ Resources:
     Properties:
       AvailabilityZone: ap-southeast-1a
       CidrBlock: 10.0.0.0/28 # 10.0.0.0 - 10.0.0.16 (16 IPs)
-      MapPublicIpOnLaunch: true
+      MapPublicIpOnLaunch: true # Indicates whether instances launched in this subnet receive a public IPv4 address. The default value is false.
       Tags: 
         - Key: Name
           Value: PublicSubnetTest
@@ -74,7 +74,6 @@ Resources:
       # Specify either InternetGatewayId or VpnGatewayId but not both
       InternetGatewayId: !GetAtt InternetGatewayTest.InternetGatewayId
       VpcId: !GetAtt VPCTest.VpcId
-      # VpnGatewayId: String
 
 ## Create Routes for the Public Route Table
 # Create a route in PublicRouteTableTest to the InternetGatewayTest
@@ -82,7 +81,6 @@ Resources:
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
-      # DestinationPrefixListId: String
       GatewayId: !GetAtt InternetGatewayTest.InternetGatewayId
       RouteTableId: !GetAtt PublicRouteTableTest.RouteTableId
 
@@ -95,10 +93,7 @@ Resources:
     Properties:
       # Can only specify either AvailabilityZone or AvailabilityZoneId, NOT both.
       AvailabilityZone: ap-southeast-1a
-      # AvailabilityZoneId: apse1-az2
-
       CidrBlock: 10.0.0.16/28 # 10.0.0.16 - 10.0.0.32 (16 IPs)
-      # MapPublicIpOnLaunch: true # Indicates whether instances launched in this subnet receive a public IPv4 address. The default value is false.
       Tags: 
         - Key: Name
           Value: PrivateSubnetTest
